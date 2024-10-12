@@ -5,6 +5,8 @@ import 'main_screen.dart';
 import 'word_detail_screen.dart';
 import 'flash_card_start_screen.dart';
 import 'word_list_screen.dart';
+import 'package:bovo/utils/favorite_utils.dart';
+import 'dart:developer' as developer;
 
 // SearchScreen: 단어 검색 기능을 제공하는 화면
 class SearchScreen extends StatefulWidget {
@@ -63,10 +65,21 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       _isSearching = query.isNotEmpty;
       if (_isSearching) {
-        _filteredWords = _allWords
+        // 검색 결과를 필터링하고 중복 제거
+        var tempList = _allWords
             .where((word) =>
                 word['word']!.toLowerCase().contains(query.toLowerCase()))
             .toList();
+
+        // 중복 제거
+        _filteredWords = [];
+        Set<String> uniqueWords = {};
+        for (var word in tempList) {
+          if (!uniqueWords.contains(word['word'])) {
+            _filteredWords.add(word);
+            uniqueWords.add(word['word'] as String);
+          }
+        }
       } else {
         _filteredWords = [];
       }
@@ -83,53 +96,89 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       );
     }
-    return ListView.builder(
+    return ListView.separated(
       itemCount: _filteredWords.length,
+      separatorBuilder: (context, index) => const Divider(
+        color: Color(0xFFD1C4E9),
+        height: 1,
+      ),
       itemBuilder: (context, index) {
-        final word = _filteredWords[index];
-        final wordText = word['word']!;
-        final query = _searchController.text.toLowerCase();
+        return _buildWordListItem(_filteredWords[index]);
+      },
+    );
+  }
 
-        return ListTile(
-          title: Row(
-            children: [
-              Expanded(
-                child: RichText(
-                  text: TextSpan(
-                    style:
-                        const TextStyle(color: Color(0xFF5D4777), fontSize: 16),
-                    children: _buildTextSpans(wordText, query),
+  // 단어 목록 아이템 빌더
+  Widget _buildWordListItem(Map<String, dynamic> word) {
+    String wordText = word['word'] as String;
+    String definition = word['definition'] as String;
+    final query = _searchController.text.toLowerCase();
+    bool isExpanded = false;
+
+    return StatefulBuilder(
+      builder: (BuildContext context, StateSetter setState) {
+        return Column(
+          children: [
+            ListTile(
+              title: RichText(
+                text: TextSpan(
+                  style:
+                      const TextStyle(color: Color(0xFF5D4777), fontSize: 16),
+                  children: _buildTextSpans(wordText, query),
+                ),
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      _favorites.contains(wordText)
+                          ? Icons.star
+                          : Icons.star_border,
+                      color: _favorites.contains(wordText)
+                          ? Colors.amber
+                          : const Color(0xFF8A7FBA),
+                      size: 20,
+                    ),
+                    onPressed: () => _toggleFavorite(wordText),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
+                  IconButton(
+                    icon: Icon(
+                      isExpanded ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                      color: const Color(0xFF8A7FBA),
+                      size: 24,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        isExpanded = !isExpanded;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              onTap: () {
+                _saveRecentSearch(wordText);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WordDetailScreen(word: word),
+                  ),
+                );
+              },
+            ),
+            if (isExpanded)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text(
+                  definition,
+                  style:
+                      const TextStyle(color: Color(0xFF8A7FBA), fontSize: 14),
                 ),
               ),
-              IconButton(
-                icon: Icon(
-                  _favorites.contains(wordText)
-                      ? Icons.star
-                      : Icons.star_border,
-                  color: _favorites.contains(wordText)
-                      ? Colors.amber
-                      : const Color(0xFF8A7FBA),
-                  size: 20,
-                ),
-                onPressed: () => _toggleFavorite(wordText),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ],
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios,
-              size: 16, color: Color(0xFF8A7FBA)),
-          onTap: () {
-            _saveRecentSearch(wordText);
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    WordDetailScreen(word: word as Map<String, String>),
-              ),
-            );
-          },
+          ],
         );
       },
     );
@@ -214,6 +263,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
   // 즐겨찾기 토글
   Future<void> _toggleFavorite(String word) async {
+    final prefs = await SharedPreferences.getInstance();
+
     setState(() {
       if (_favorites.contains(word)) {
         _favorites.remove(word);
@@ -221,8 +272,23 @@ class _SearchScreenState extends State<SearchScreen> {
         _favorites.add(word);
       }
     });
-    final prefs = await SharedPreferences.getInstance();
+
     await prefs.setStringList('favorites', _favorites.toList());
+
+    // 단어장에 즐겨찾기 단어 추가 또는 제거
+    List<String> wordbook = prefs.getStringList('wordbook') ?? [];
+    if (_favorites.contains(word)) {
+      if (!wordbook.contains(word)) {
+        wordbook.add(word);
+      }
+    } else {
+      wordbook.remove(word);
+    }
+    await prefs.setStringList('wordbook', wordbook);
+
+    // 디버그 출력
+    print('즐겨찾기: $_favorites');
+    print('단어장: $wordbook');
   }
 
   @override

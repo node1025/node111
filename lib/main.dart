@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'word_data.dart';
 import 'screens/splash_screen.dart'; // SplashScreen import 추가
 
-//수정한 것인지 확인하는 문구
+//수정한 것인지 확인하는 문구123
 // 앱의 진입점
 void main() async {
   // Flutter 엔진과 위젯 바인딩 초기화

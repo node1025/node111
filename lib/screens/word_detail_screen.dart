@@ -7,63 +7,73 @@ import 'word_list_screen.dart';
 class WordDetailScreen extends StatelessWidget {
   final Map<String, dynamic> word; // 단어 정보를 담은 Map
 
-  const WordDetailScreen({super.key, required this.word});
+  const WordDetailScreen({Key? key, required this.word}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('단어 찾기', style: TextStyle(color: Colors.white)),
+        title: Text(word['word'] ?? ''),
         backgroundColor: const Color(0xFF8A7FBA),
-        elevation: 0,
-        leading: IconButton(
-          // 뒤로 가기 버튼
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
       ),
-      body: Container(
-        color: const Color(0xFFF0F0FF), // 배경색 설정
+      body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 단어 표시
               Text(
                 word['word'] ?? '',
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF5D4777),
-                ),
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineSmall
+                    ?.copyWith(color: const Color(0xFF5D4777)),
               ),
-              const SizedBox(height: 24),
-              // 단어 정의를 포함하는 컨테이너
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 3,
-                      offset: const Offset(0, 2),
+              const SizedBox(height: 16),
+              Text(
+                '정의:',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF8A7FBA)),
+              ),
+              Text(
+                word['definition'] ?? '',
+                style: TextStyle(color: const Color(0xFF5D4777)),
+              ),
+              const SizedBox(height: 16),
+              if (word['example1']?.isNotEmpty ?? false)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '예문 1:',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF8A7FBA)),
+                    ),
+                    Text(
+                      word['example1'] ?? '',
+                      style: TextStyle(color: const Color(0xFF5D4777)),
                     ),
                   ],
                 ),
-                // 단어 정의 표시
-                child: Text(
-                  word['definition'] ?? '',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: Color(0xFF6A5495),
-                    height: 1.5,
-                  ),
+              const SizedBox(height: 16),
+              if (word['example2']?.isNotEmpty ?? false)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '예문 2:',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF8A7FBA)),
+                    ),
+                    Text(
+                      word['example2'] ?? '',
+                      style: TextStyle(color: const Color(0xFF5D4777)),
+                    ),
+                  ],
                 ),
-              ),
             ],
           ),
         ),

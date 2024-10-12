@@ -6,6 +6,7 @@ import 'main_screen.dart';
 import 'search_screen.dart';
 import 'flash_card_start_screen.dart';
 import 'package:bovo/services/favorite_words_service.dart';
+import 'package:bovo/utils/favorite_utils.dart';
 
 // WordListScreen 위젯: 단어 목록을 표시하는 화면
 class WordListScreen extends StatefulWidget {
@@ -18,7 +19,6 @@ class WordListScreen extends StatefulWidget {
 class _WordListScreenState extends State<WordListScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _showAlphabetList = false;
-  String? _expandedWord;
   String? _pressedLetter;
   Timer? _hideTimer;
 
@@ -68,7 +68,7 @@ class _WordListScreenState extends State<WordListScreen> {
   }
 
   Future<void> _loadFavoriteWords() async {
-    final words = await _favoriteWordsService.getFavoriteWords();
+    final words = await FavoriteUtils.getFavorites();
     setState(() {
       _favoriteWords = words;
     });
@@ -271,26 +271,33 @@ class _WordListScreenState extends State<WordListScreen> {
                       ),
                       // 단어 목록 (단어가 있는 경우에만 표시)
                       if (words.isNotEmpty)
-                        ...words.map((word) => ListTile(
+                        ...words.map((word) => ExpansionTile(
                               title: Text(word['word']!),
                               trailing: IconButton(
                                 icon: Icon(
                                   _favoriteWords.contains(word['word'])
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  color: Colors.red,
+                                      ? Icons.star
+                                      : Icons.star_border,
+                                  color: _favoriteWords.contains(word['word'])
+                                      ? Colors.yellow
+                                      : Colors.grey,
                                 ),
                                 onPressed: () async {
-                                  if (_favoriteWords.contains(word['word'])) {
-                                    await _favoriteWordsService
-                                        .removeFavoriteWord(word['word']!);
-                                  } else {
-                                    await _favoriteWordsService
-                                        .addFavoriteWord(word['word']!);
-                                  }
+                                  await FavoriteUtils.toggleFavorite(
+                                      word['word']!);
                                   await _loadFavoriteWords();
                                 },
                               ),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    word['definition']!,
+                                    style: const TextStyle(
+                                        color: Color(0xFF6A5495)),
+                                  ),
+                                ),
+                              ],
                             )),
                     ],
                   );
@@ -425,7 +432,7 @@ class CustomExpansionTile extends StatelessWidget {
                 IconButton(
                   icon: Icon(
                     isFavorite ? Icons.star : Icons.star_border,
-                    color: isFavorite ? Colors.amber : const Color(0xFF8A7FBA),
+                    color: isFavorite ? Colors.yellow : Colors.grey,
                   ),
                   onPressed: onFavoriteChanged,
                 ),
