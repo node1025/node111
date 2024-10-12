@@ -6,7 +6,7 @@ import 'dart:math';
 class FlashCardScreen extends StatefulWidget {
   final String category;
 
-  FlashCardScreen({required this.category});
+  const FlashCardScreen({super.key, required this.category});
 
   @override
   _FlashCardScreenState createState() => _FlashCardScreenState();
@@ -29,8 +29,8 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   String displayedMeaning = '';
   List<Map<String, String>> currentWordSet = []; // 현재 학습 중인 단어 세트
 
-  final Color primaryColor = Color(0xFF9575CD);
-  final Color accentColor = Color(0xFFD1C4E9);
+  final Color primaryColor = const Color(0xFF9575CD);
+  final Color accentColor = const Color(0xFFD1C4E9);
 
   @override
   void initState() {
@@ -109,7 +109,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('수고하셨습니다!'),
+          title: const Text('수고하셨습니다!'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -118,33 +118,29 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                   Navigator.of(context).pop();
                   _resetToFirstWord();
                 },
-                child: Text('다시 학습하기'),
                 style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(primaryColor),
-                  foregroundColor:
-                      MaterialStateProperty.all<Color>(Colors.white),
-                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                    EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  backgroundColor: WidgetStateProperty.all<Color>(primaryColor),
+                  foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
+                  padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
                 ),
+                child: Text('다시 학습하기'),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                   _startQuiz();
                 },
-                child: Text('퀴즈 시작하기'),
                 style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(primaryColor),
-                  foregroundColor:
-                      MaterialStateProperty.all<Color>(Colors.white),
-                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                    EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  backgroundColor: WidgetStateProperty.all<Color>(primaryColor),
+                  foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
+                  padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
                 ),
+                child: Text('퀴즈 시작하기'),
               ),
             ],
           ),
@@ -207,7 +203,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         incorrectAnswers.add(quizWords[currentIndex]);
       }
 
-      Future.delayed(Duration(milliseconds: 500), _nextCard);
+      Future.delayed(const Duration(milliseconds: 500), _nextCard);
     });
   }
 
@@ -218,20 +214,21 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('퀴즈 결과', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text('퀴즈 결과',
+              style: TextStyle(fontWeight: FontWeight.bold)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('오늘의 점수',
                     style: TextStyle(fontSize: 24, color: Colors.grey[600])),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Text('$score',
                     style: TextStyle(
                         fontSize: 72,
                         fontWeight: FontWeight.bold,
                         color: primaryColor)),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text(
                   score <= 40
                       ? '아쉬워요. 다시 학습하러 가 볼까요?'
@@ -246,29 +243,27 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                       color: primaryColor),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 if (incorrectAnswers.isNotEmpty) ...[
-                  Text('오답 리스트',
+                  const Text('오답 리스트',
                       style:
                           TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 10),
-                  ...incorrectAnswers
-                      .map((word) => Card(
-                            child: ListTile(
-                              title: Text(word['word']!,
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
-                              subtitle: Text(word['definition']!),
-                            ),
-                          ))
-                      .toList(),
+                  const SizedBox(height: 10),
+                  ...incorrectAnswers.map((word) => Card(
+                        child: ListTile(
+                          title: Text(word['word']!,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text(word['definition']!),
+                        ),
+                      )),
                 ],
               ],
             ),
           ),
           actions: [
             TextButton(
-              child: Text('단어학습 다시하기'),
+              child: const Text('단어학습 다시하기'),
               onPressed: () {
                 Navigator.of(context).pop();
                 _resetToLearningMode();
@@ -310,7 +305,8 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Text(
                 '${currentIndex + 1} / ${quizWords.length}',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -333,27 +329,27 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                         ),
                         child: Container(
                           width: double.infinity,
-                          padding: EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(20),
                           child: Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
                                   quizWords[currentIndex]['word'] ?? '',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       fontSize: 36,
                                       fontWeight: FontWeight.bold),
                                   textAlign: TextAlign.center,
                                 ),
-                                SizedBox(height: 20),
+                                const SizedBox(height: 20),
                                 if (showDefinition)
                                   Text(
                                     quizWords[currentIndex]['definition'] ?? '',
-                                    style: TextStyle(fontSize: 24),
+                                    style: const TextStyle(fontSize: 24),
                                     textAlign: TextAlign.center,
                                   )
                                 else
-                                  Text(
+                                  const Text(
                                     '터치하여 뜻 보기',
                                     style: TextStyle(
                                         fontSize: 18, color: Colors.grey),
@@ -370,11 +366,12 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                 else if (!isAnswered) ...[
                   Text(
                     displayedWord,
-                    style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 36, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Container(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -383,37 +380,37 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                           color: Colors.grey.withOpacity(0.5),
                           spreadRadius: 2,
                           blurRadius: 5,
-                          offset: Offset(0, 3),
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
                     child: Text(
                       displayedMeaning,
-                      style: TextStyle(fontSize: 24),
+                      style: const TextStyle(fontSize: 24),
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  SizedBox(height: 40),
+                  const SizedBox(height: 40),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       ElevatedButton(
                         onPressed: () => _checkAnswer(true),
-                        child: Text('O', style: TextStyle(fontSize: 36)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
-                          shape: CircleBorder(),
-                          padding: EdgeInsets.all(24),
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(24),
                         ),
+                        child: Text('O', style: TextStyle(fontSize: 36)),
                       ),
                       ElevatedButton(
                         onPressed: () => _checkAnswer(false),
-                        child: Text('X', style: TextStyle(fontSize: 36)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
-                          shape: CircleBorder(),
-                          padding: EdgeInsets.all(24),
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(24),
                         ),
+                        child: Text('X', style: TextStyle(fontSize: 36)),
                       ),
                     ],
                   ),
@@ -430,7 +427,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ],
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 if (!isQuizMode)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -442,21 +439,21 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                             showDefinition = false;
                           });
                         },
-                        child: Icon(Icons.arrow_back),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
-                          shape: CircleBorder(),
-                          padding: EdgeInsets.all(16),
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(16),
                         ),
+                        child: Icon(Icons.arrow_back),
                       ),
                       ElevatedButton(
                         onPressed: _nextCard,
-                        child: Icon(Icons.arrow_forward),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
-                          shape: CircleBorder(),
-                          padding: EdgeInsets.all(16),
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(16),
                         ),
+                        child: Icon(Icons.arrow_forward),
                       ),
                     ],
                   ),

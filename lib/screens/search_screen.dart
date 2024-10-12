@@ -8,7 +8,7 @@ import 'word_list_screen.dart';
 
 // SearchScreen: 단어 검색 기능을 제공하는 화면
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({Key? key}) : super(key: key);
+  const SearchScreen({super.key});
 
   @override
   _SearchScreenState createState() => _SearchScreenState();
@@ -20,12 +20,14 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Map<String, dynamic>> _filteredWords = [];
   List<String> _recentSearches = [];
   bool _isSearching = false;
+  Set<String> _favorites = <String>{};
 
   @override
   void initState() {
     super.initState();
     _loadWords();
     _loadRecentSearches();
+    _loadFavorites(); // 즐겨찾기 목록 로드
   }
 
   // 모든 단어 데이터 로드
@@ -74,7 +76,7 @@ class _SearchScreenState extends State<SearchScreen> {
   // 검색 결과 위젯 생성
   Widget _buildSearchResults() {
     if (_filteredWords.isEmpty) {
-      return Center(
+      return const Center(
         child: Text(
           '검색 결과가 없습니다.',
           style: TextStyle(fontSize: 16, color: Color(0xFF5D4777)),
@@ -89,18 +91,42 @@ class _SearchScreenState extends State<SearchScreen> {
         final query = _searchController.text.toLowerCase();
 
         return ListTile(
-          title: RichText(
-            text: TextSpan(
-              style: TextStyle(color: Color(0xFF5D4777), fontSize: 16),
-              children: _buildTextSpans(wordText, query),
-            ),
+          title: Row(
+            children: [
+              Expanded(
+                child: RichText(
+                  text: TextSpan(
+                    style:
+                        const TextStyle(color: Color(0xFF5D4777), fontSize: 16),
+                    children: _buildTextSpans(wordText, query),
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  _favorites.contains(wordText)
+                      ? Icons.star
+                      : Icons.star_border,
+                  color: _favorites.contains(wordText)
+                      ? Colors.amber
+                      : const Color(0xFF8A7FBA),
+                  size: 20,
+                ),
+                onPressed: () => _toggleFavorite(wordText),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
           ),
+          trailing: const Icon(Icons.arrow_forward_ios,
+              size: 16, color: Color(0xFF8A7FBA)),
           onTap: () {
             _saveRecentSearch(wordText);
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => WordDetailScreen(word: word),
+                builder: (context) =>
+                    WordDetailScreen(word: word as Map<String, String>),
               ),
             );
           },
@@ -120,7 +146,8 @@ class _SearchScreenState extends State<SearchScreen> {
       }
       spans.add(TextSpan(
         text: text.substring(match.start, match.end),
-        style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF8A7FBA)),
+        style: const TextStyle(
+            fontWeight: FontWeight.bold, color: Color(0xFF8A7FBA)),
       ));
       start = match.end;
     }
@@ -138,7 +165,7 @@ class _SearchScreenState extends State<SearchScreen> {
             itemCount: _recentSearches.length,
             itemBuilder: (context, index) {
               return ListTile(
-                leading: Icon(Icons.history),
+                leading: const Icon(Icons.history),
                 title: Text(_recentSearches[index]),
                 onTap: () {
                   _searchController.text = _recentSearches[index];
@@ -151,7 +178,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   // 로고 섹션 위젯 생성
   Widget _buildLogoSection() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -177,6 +204,27 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  // 즐겨찾기 목록 로드
+  Future<void> _loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _favorites = Set<String>.from(prefs.getStringList('favorites') ?? []);
+    });
+  }
+
+  // 즐겨찾기 토글
+  Future<void> _toggleFavorite(String word) async {
+    setState(() {
+      if (_favorites.contains(word)) {
+        _favorites.remove(word);
+      } else {
+        _favorites.add(word);
+      }
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('favorites', _favorites.toList());
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -187,7 +235,7 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
               _clearSearch();
               Navigator.pushAndRemoveUntil(
@@ -198,11 +246,11 @@ class _SearchScreenState extends State<SearchScreen> {
             },
           ),
           title: const Text('단어 찾기', style: TextStyle(color: Colors.white)),
-          backgroundColor: Color(0xFF8A7FBA),
+          backgroundColor: const Color(0xFF8A7FBA),
           elevation: 0,
         ),
         body: Container(
-          color: Color(0xFFF0F0FF),
+          color: const Color(0xFFF0F0FF),
           child: Column(
             children: [
               // 검색 입력 필드
@@ -219,7 +267,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       borderSide: BorderSide.none,
                     ),
                     suffixIcon: IconButton(
-                      icon: Icon(Icons.search, color: Color(0xFF8A7FBA)),
+                      icon: const Icon(Icons.search, color: Color(0xFF8A7FBA)),
                       onPressed: () {
                         _filterSearchResults(_searchController.text);
                       },
@@ -233,8 +281,8 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               // 최근 검색어가 없을 때 메시지 표시
               if (_recentSearches.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
                   child: Text(
                     '최근 검색어가 없습니다.',
                     style: TextStyle(
@@ -255,9 +303,9 @@ class _SearchScreenState extends State<SearchScreen> {
         // 하단 네비게이션 바
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Color(0xFF8A7FBA),
+          backgroundColor: const Color(0xFF8A7FBA),
           selectedItemColor: Colors.white,
-          unselectedItemColor: Color(0xFFD5D1EE),
+          unselectedItemColor: const Color(0xFFD5D1EE),
           currentIndex: 1,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
@@ -277,9 +325,9 @@ class _SearchScreenState extends State<SearchScreen> {
                       case 2:
                         return FlashCardStartScreen();
                       case 3:
-                        return WordListScreen();
+                        return const WordListScreen();
                       default:
-                        return SearchScreen();
+                        return const SearchScreen();
                     }
                   },
                 ),

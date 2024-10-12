@@ -7,6 +7,8 @@ import '../word_data.dart';
 
 // FlashCardStartScreen: 플래시 카드 학습을 시작하는 화면
 class FlashCardStartScreen extends StatefulWidget {
+  const FlashCardStartScreen({super.key});
+
   @override
   _FlashCardStartScreenState createState() => _FlashCardStartScreenState();
 }
@@ -39,23 +41,23 @@ class _FlashCardStartScreenState extends State<FlashCardStartScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('오늘 단어', style: TextStyle(color: Colors.white)),
-        backgroundColor: Color(0xFF8A7FBA),
+        title: const Text('오늘 단어', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF8A7FBA),
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: Container(
-        color: Color(0xFFF0F0FF),
+        color: const Color(0xFFF0F0FF),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 안내 메시지
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
               child: Text(
                 '오늘의 단어를 학습해 보세요!',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -68,7 +70,7 @@ class _FlashCardStartScreenState extends State<FlashCardStartScreen> {
                 childAspectRatio: 1.2,
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 16,
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 children: categories
                     .map((category) => _buildCategoryCard(context,
                         category['icon'], category['name'], category['name']))
@@ -81,9 +83,9 @@ class _FlashCardStartScreenState extends State<FlashCardStartScreen> {
       // 하단 네비게이션 바
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Color(0xFF8A7FBA),
+        backgroundColor: const Color(0xFF8A7FBA),
         selectedItemColor: Colors.white,
-        unselectedItemColor: Color(0xFFD5D1EE),
+        unselectedItemColor: const Color(0xFFD5D1EE),
         currentIndex: 2,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
@@ -101,9 +103,9 @@ class _FlashCardStartScreenState extends State<FlashCardStartScreen> {
                     case 0:
                       return MainScreen();
                     case 1:
-                      return SearchScreen();
+                      return const SearchScreen();
                     case 3:
-                      return WordListScreen();
+                      return const WordListScreen();
                     default:
                       return FlashCardStartScreen();
                   }
@@ -137,11 +139,11 @@ class _FlashCardStartScreenState extends State<FlashCardStartScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 48, color: Color(0xFF8A7FBA)),
-            SizedBox(height: 8),
+            Icon(icon, size: 48, color: const Color(0xFF8A7FBA)),
+            const SizedBox(height: 8),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF8A7FBA),

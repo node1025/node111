@@ -5,10 +5,11 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'main_screen.dart';
 import 'search_screen.dart';
 import 'flash_card_start_screen.dart';
+import 'package:bovo/services/favorite_words_service.dart';
 
 // WordListScreen 위젯: 단어 목록을 표시하는 화면
 class WordListScreen extends StatefulWidget {
-  const WordListScreen({Key? key}) : super(key: key);
+  const WordListScreen({super.key});
 
   @override
   _WordListScreenState createState() => _WordListScreenState();
@@ -42,11 +43,16 @@ class _WordListScreenState extends State<WordListScreen> {
   ];
 
   // 각 그룹의 시작 위치를 저장하는 맵
-  Map<String, double> _letterPositions = {};
+  final Map<String, double> _letterPositions = {};
 
-  Map<String, GlobalKey> _letterKeys = {};
+  final Map<String, GlobalKey> _letterKeys = {};
 
-  Map<String, double> _letterOffsets = {};
+  final Map<String, double> _letterOffsets = {};
+
+  final Set<String> _favorites = <String>{};
+
+  final FavoriteWordsService _favoriteWordsService = FavoriteWordsService();
+  List<String> _favoriteWords = [];
 
   @override
   void initState() {
@@ -58,6 +64,14 @@ class _WordListScreenState extends State<WordListScreen> {
     }
     WidgetsBinding.instance
         .addPostFrameCallback((_) => _calculateLetterOffsets());
+    _loadFavoriteWords();
+  }
+
+  Future<void> _loadFavoriteWords() async {
+    final words = await _favoriteWordsService.getFavoriteWords();
+    setState(() {
+      _favoriteWords = words;
+    });
   }
 
   // JSON 파일에서 단어 데이터를 로드하는 메서드
@@ -160,7 +174,7 @@ class _WordListScreenState extends State<WordListScreen> {
           kToolbarHeight;
       _scrollController.animateTo(
         offset,
-        duration: Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     }
@@ -202,12 +216,22 @@ class _WordListScreenState extends State<WordListScreen> {
     }
   }
 
+  void _toggleFavorite(String word) {
+    setState(() {
+      if (_favorites.contains(word)) {
+        _favorites.remove(word);
+      } else {
+        _favorites.add(word);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('단어 목록', style: TextStyle(color: Colors.white)),
-        backgroundColor: Color(0xFF8A7FBA),
+        backgroundColor: const Color(0xFF8A7FBA),
         elevation: 0,
       ),
       body: NotificationListener<ScrollNotification>(
@@ -218,7 +242,7 @@ class _WordListScreenState extends State<WordListScreen> {
           return true;
         },
         child: Container(
-          color: Color(0xFFF0F0FF),
+          color: const Color(0xFFF0F0FF),
           child: Stack(
             children: [
               // 단어 목록을 표시하는 ListView
@@ -235,10 +259,10 @@ class _WordListScreenState extends State<WordListScreen> {
                       // 초성 헤더 (항상 표시)
                       Container(
                         padding: const EdgeInsets.all(12.0),
-                        color: Color(0xFFD5D1EE),
+                        color: const Color(0xFFD5D1EE),
                         child: Text(
                           letter,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                             color: Color(0xFF5D4777),
@@ -247,16 +271,26 @@ class _WordListScreenState extends State<WordListScreen> {
                       ),
                       // 단어 목록 (단어가 있는 경우에만 표시)
                       if (words.isNotEmpty)
-                        ...words.map((word) => CustomExpansionTile(
-                              word: word['word']!,
-                              definition: word['definition']!,
-                              isExpanded: word['word'] == _expandedWord,
-                              onExpansionChanged: (expanded) {
-                                setState(() {
-                                  _expandedWord =
-                                      expanded ? word['word'] : null;
-                                });
-                              },
+                        ...words.map((word) => ListTile(
+                              title: Text(word['word']!),
+                              trailing: IconButton(
+                                icon: Icon(
+                                  _favoriteWords.contains(word['word'])
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () async {
+                                  if (_favoriteWords.contains(word['word'])) {
+                                    await _favoriteWordsService
+                                        .removeFavoriteWord(word['word']!);
+                                  } else {
+                                    await _favoriteWordsService
+                                        .addFavoriteWord(word['word']!);
+                                  }
+                                  await _loadFavoriteWords();
+                                },
+                              ),
                             )),
                     ],
                   );
@@ -271,7 +305,7 @@ class _WordListScreenState extends State<WordListScreen> {
                   child: Container(
                     width: 40,
                     decoration: BoxDecoration(
-                      color: Color(0xFFB3ADE0).withOpacity(0.2),
+                      color: const Color(0xFFB3ADE0).withOpacity(0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: ListView(
@@ -281,6 +315,12 @@ class _WordListScreenState extends State<WordListScreen> {
                                 child: Container(
                                   height: 40,
                                   alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: _pressedLetter == letter
+                                        ? const Color(0xFF8A7FBA)
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
                                   child: Text(
                                     letter,
                                     style: TextStyle(
@@ -290,12 +330,6 @@ class _WordListScreenState extends State<WordListScreen> {
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
                                     ),
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: _pressedLetter == letter
-                                        ? Color(0xFF8A7FBA)
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(20),
                                   ),
                                 ),
                               ))
@@ -311,9 +345,9 @@ class _WordListScreenState extends State<WordListScreen> {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: 3,
-        backgroundColor: Color(0xFF8A7FBA),
+        backgroundColor: const Color(0xFF8A7FBA),
         selectedItemColor: Colors.white,
-        unselectedItemColor: Color(0xFFD5D1EE),
+        unselectedItemColor: const Color(0xFFD5D1EE),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: '단어찾기'),
@@ -328,7 +362,7 @@ class _WordListScreenState extends State<WordListScreen> {
                 screen = MainScreen();
                 break;
               case 1:
-                screen = SearchScreen();
+                screen = const SearchScreen();
                 break;
               case 2:
                 screen = FlashCardStartScreen();
@@ -353,20 +387,24 @@ class CustomExpansionTile extends StatelessWidget {
   final String word;
   final String definition;
   final bool isExpanded;
+  final bool isFavorite;
   final ValueChanged<bool> onExpansionChanged;
+  final VoidCallback onFavoriteChanged;
 
   const CustomExpansionTile({
-    Key? key,
+    super.key,
     required this.word,
     required this.definition,
     required this.isExpanded,
+    required this.isFavorite,
     required this.onExpansionChanged,
-  }) : super(key: key);
+    required this.onFavoriteChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       elevation: isExpanded ? 4 : 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: Colors.white,
@@ -376,14 +414,26 @@ class CustomExpansionTile extends StatelessWidget {
           ListTile(
             title: Text(
               word,
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF5D4777),
               ),
             ),
-            trailing: Icon(
-              isExpanded ? Icons.expand_less : Icons.expand_more,
-              color: Color(0xFF8A7FBA),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    isFavorite ? Icons.star : Icons.star_border,
+                    color: isFavorite ? Colors.amber : const Color(0xFF8A7FBA),
+                  ),
+                  onPressed: onFavoriteChanged,
+                ),
+                Icon(
+                  isExpanded ? Icons.expand_less : Icons.expand_more,
+                  color: const Color(0xFF8A7FBA),
+                ),
+              ],
             ),
             onTap: () => onExpansionChanged(!isExpanded),
           ),
@@ -393,7 +443,7 @@ class CustomExpansionTile extends StatelessWidget {
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Text(
                 definition,
-                style: TextStyle(fontSize: 14, color: Color(0xFF6A5495)),
+                style: const TextStyle(fontSize: 14, color: Color(0xFF6A5495)),
               ),
             ),
         ],

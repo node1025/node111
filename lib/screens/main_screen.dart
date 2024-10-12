@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'search_screen.dart';
 import 'word_list_screen.dart';
-import 'flash_card_start_screen.dart'; // FlashCardStartScreen을 import
+import 'flash_card_start_screen.dart';
+import 'mynote_screen.dart'; // MyNoteScreen을 import
 
 // MainScreen: 앱의 메인 화면을 구성하는 위젯
 class MainScreen extends StatelessWidget {
+  const MainScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       // 앱 바: 앱 제목 표시
       appBar: AppBar(
-        title: Text('BOVO', style: TextStyle(color: Colors.white)),
-        backgroundColor: Color(0xFF8A7FBA),
+        title: const Text('BOVO', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF8A7FBA),
         elevation: 0,
       ),
       body: Container(
-        color: Color(0xFFF0F0FF), // 배경색 설정
+        color: const Color(0xFFF0F0FF), // 배경색 설정
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -29,10 +32,11 @@ class MainScreen extends StatelessWidget {
                   label: '단어 찾기',
                   onPressed: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => SearchScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const SearchScreen()),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 // '오늘 단어' 버튼
                 _buildLargeButton(
                   context,
@@ -44,7 +48,7 @@ class MainScreen extends StatelessWidget {
                         builder: (context) => FlashCardStartScreen()),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 // '단어 목록' 버튼
                 _buildLargeButton(
                   context,
@@ -52,7 +56,19 @@ class MainScreen extends StatelessWidget {
                   label: '단어 목록',
                   onPressed: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => WordListScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const WordListScreen()),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // '단어장' 버튼
+                _buildLargeButton(
+                  context,
+                  icon: Icons.favorite,
+                  label: '단어장',
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MyNoteScreen()),
                   ),
                 ),
               ],
@@ -77,11 +93,11 @@ class MainScreen extends StatelessWidget {
         icon: Icon(icon, size: 30, color: Colors.white),
         label: Text(
           label,
-          style: TextStyle(fontSize: 20, color: Colors.white),
+          style: const TextStyle(fontSize: 20, color: Colors.white),
         ),
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Color(0xFF8A7FBA), // 버튼 배경색 설정
+          backgroundColor: const Color(0xFF8A7FBA), // 버튼 배경색 설정
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20), // 버튼 모서리 둥글게 설정
           ),

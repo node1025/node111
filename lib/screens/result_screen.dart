@@ -5,7 +5,7 @@ class ResultScreen extends StatelessWidget {
   final String category;
 
   // 생성자: 선택된 카테고리를 매개변수로 받음
-  const ResultScreen({Key? key, required this.category}) : super(key: key);
+  const ResultScreen({super.key, required this.category});
 
   @override
   Widget build(BuildContext context) {
